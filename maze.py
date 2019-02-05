@@ -2,6 +2,7 @@ import numpy as np
 from collections import namedtuple
 import pprint
 import matplotlib.pyplot as plt
+from random import choice
 
 
 class Stack:
@@ -31,10 +32,10 @@ class Maze():
         self.width = width
         self.height = height
         self.maze = np.full((width, height), False)
-        self.walls = np.full((width+1, height+1), False)
+        self.walls = np.full((width+2, height+2), False)
 
     def get_neighbour_cells(self, cell):
-        stencil = ((0, 1), (0, -1), (1, 0), (-1, 0))
+        stencil = ((0, 2), (0, -2), (2, 0), (-2, 0))
         neighbour_cells = [cell + diff for diff in stencil]
         neighbour_cells = [cell for cell in neighbour_cells if 0 <= cell.x < self.width and 0 <= cell.y < self.height]
         neighbour_cells_state = [self.maze[cell] for cell in neighbour_cells]
@@ -49,7 +50,11 @@ class Maze():
         self.maze[cell] = True
 
     def remove_wall(self, cell, diff):
-        self.walls[cell+diff] = True
+        self.maze[cell+diff] = True
+
+    def move(self, start_cell, end_cell):
+        self.set_visited(end_cell)
+        self.remove_wall(start_cell, [d/2 for d in end_cell-start_cell])
 
 
 def has_unvisited_neighbours(maze, cell):
@@ -62,26 +67,23 @@ def has_unvisited_neighbours(maze, cell):
 def generate_maze(width, height):
     maze = Maze(width, height)
     stack = Stack()
-    current_cell = Cell(0, 0)
+    current_cell = Cell(1, 1)
     maze.set_visited(current_cell)
     while not np.all(maze.maze):
         unvisited_cells = maze.get_unvisited_neighbours(current_cell)
         # if the current cell has any neighbours which have not been visited
         if len(unvisited_cells) > 0:
-            chosen_cell = unvisited_cells.pop()
+            chosen_cell = choice(unvisited_cells)
             stack.push(current_cell)
-            diff = chosen_cell - current_cell
+            maze.move(current_cell, chosen_cell)
             current_cell = chosen_cell
-            maze.set_visited(chosen_cell)
-            maze.remove_wall(current_cell, diff)
         elif len(stack) > 0:
             current_cell = stack.pop()
         else:
             break
-    pprint.pprint(maze.walls)
-    plt.imshow(maze.walls, interpolation="None")
+    plt.imshow(maze.maze, interpolation="None", cmap="gray")
     plt.show()
 
 
 if __name__ == '__main__':
-    generate_maze(8, 8)
+    generate_maze(23, 43)
