@@ -31,13 +31,12 @@ class Maze():
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.maze = np.full((width, height), False)
-        self.walls = np.full((width+2, height+2), False)
+        self.maze = np.full((height+2, width+2), False)
 
     def get_neighbour_cells(self, cell):
         stencil = ((0, 2), (0, -2), (2, 0), (-2, 0))
         neighbour_cells = [cell + diff for diff in stencil]
-        neighbour_cells = [cell for cell in neighbour_cells if 0 <= cell.x < self.width and 0 <= cell.y < self.height]
+        neighbour_cells = [cell for cell in neighbour_cells if 0 < cell.y <= self.width and 0 < cell.x <= self.height]
         neighbour_cells_state = [self.maze[cell] for cell in neighbour_cells]
         return neighbour_cells, neighbour_cells_state
 
@@ -73,17 +72,25 @@ def generate_maze(width, height):
         unvisited_cells = maze.get_unvisited_neighbours(current_cell)
         # if the current cell has any neighbours which have not been visited
         if len(unvisited_cells) > 0:
+            # choose one random unvisited neighbour and travel there
             chosen_cell = choice(unvisited_cells)
             stack.push(current_cell)
             maze.move(current_cell, chosen_cell)
             current_cell = chosen_cell
         elif len(stack) > 0:
+            # if all neighbours have been visited backtrack to the previous cell
             current_cell = stack.pop()
         else:
+            # done, add entry and exit of maze
+            maze.maze[0, 1] = True
+            maze.maze[height, width+1] = True
             break
     plt.imshow(maze.maze, interpolation="None", cmap="gray")
-    plt.show()
+    ax = plt.gca()
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+    plt.savefig("maze.png")
 
 
 if __name__ == '__main__':
-    generate_maze(23, 43)
+    generate_maze(55, 31)
