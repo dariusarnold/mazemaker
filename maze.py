@@ -53,7 +53,7 @@ class Maze():
 
     def move(self, start_cell, end_cell):
         self.set_visited(end_cell)
-        self.remove_wall(start_cell, [d/2 for d in end_cell-start_cell])
+        self.remove_wall(start_cell, [d//2 for d in end_cell-start_cell])
 
 
 def has_unvisited_neighbours(maze, cell):
