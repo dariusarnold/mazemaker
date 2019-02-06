@@ -1,8 +1,9 @@
-import numpy as np
+import argparse
 from collections import namedtuple
-import pprint
+from random import choice, seed
+
 import matplotlib.pyplot as plt
-from random import choice
+import numpy as np
 
 
 class Stack:
@@ -93,4 +94,8 @@ def generate_maze(width, height):
 
 
 if __name__ == '__main__':
-    generate_maze(55, 31)
+    parser = argparse.ArgumentParser(description="Generate mazes.")
+    parser.add_argument("width", type=int, help="Width of the maze in cells")
+    parser.add_argument("height", type=int, help="Height of the maze in cells")
+    args = parser.parse_args()
+    generate_maze(args.width, args.height)
