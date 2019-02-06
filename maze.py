@@ -90,7 +90,7 @@ def generate_maze(width, height):
     ax = plt.gca()
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
-    plt.savefig("maze.png")
+    plt.savefig("maze.pdf", dpi=666)
 
 
 if __name__ == '__main__':
