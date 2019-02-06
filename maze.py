@@ -97,5 +97,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate mazes.")
     parser.add_argument("width", type=int, help="Width of the maze in cells")
     parser.add_argument("height", type=int, help="Height of the maze in cells")
+    parser.add_argument("-s", "--seed", help="Seed for random generator")
     args = parser.parse_args()
+
+    seed(args.seed)
+
     generate_maze(args.width, args.height)
