@@ -128,12 +128,6 @@ class MazeVisualizerPIL:
         self.img.save("test.png")
 
 
-def has_unvisited_neighbours(maze, cell):
-    neighbour_cells = maze.get_neighbour_cell_indices(cell)
-    neighbour_cells = [maze.maze[cell] for cell in neighbour_cells]
-    return neighbour_cells
-
-
 def generate_maze(width, height):
     maze = Maze(width, height)
     stack = Stack()
