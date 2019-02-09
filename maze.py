@@ -3,8 +3,8 @@ from collections import namedtuple
 from random import choice, seed
 import enum
 
-import matplotlib.pyplot as plt
 import numpy as np
+from PIL import Image, ImageDraw
 
 
 class Stack:
@@ -93,6 +93,41 @@ class Maze:
         return self.cell_grid[cell_index.y, cell_index.x]
 
 
+class MazeVisualizerPIL:
+    def __init__(self, maze, cell_size_pixels):
+        self.maze = maze
+        self.cell_size_pixels = cell_size_pixels
+        self._init_plot()
+
+    def _init_plot(self):
+        width = self.maze.width*self.cell_size_pixels+1
+        height = self.maze.height*self.cell_size_pixels+1
+        self.img = Image.new(mode="L", size=(width, height), color=255)
+        self.draw = ImageDraw.Draw(self.img)
+
+    def plot_walls(self):
+        for hor_index in range(self.maze.width):
+            for ver_index in range(self.maze.height):
+                cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
+                top_left_pixel = (hor_index*self.cell_size_pixels, ver_index*self.cell_size_pixels)
+                top_right_pixel = ((hor_index+1)*self.cell_size_pixels, ver_index*self.cell_size_pixels)
+                bottom_left_pixel = (hor_index*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
+                bottom_right_pixel = ((hor_index+1)*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
+                fill = 0
+                width = 1
+                if cell.walls[Direction.N]:
+                    self.draw.line((top_left_pixel, top_right_pixel), fill, width)
+                if cell.walls[Direction.E]:
+                    self.draw.line((top_right_pixel, bottom_right_pixel), fill, width)
+                if cell.walls[Direction.S]:
+                    self.draw.line((bottom_right_pixel, bottom_left_pixel), fill, width)
+                if cell.walls[Direction.W]:
+                    self.draw.line((top_left_pixel, bottom_left_pixel), fill, width)
+
+    def save_plot(self):
+        self.img.save("test.png")
+
+
 def has_unvisited_neighbours(maze, cell):
     neighbour_cells = maze.get_neighbour_cell_indices(cell)
     neighbour_cells = [maze.maze[cell] for cell in neighbour_cells]
@@ -118,11 +153,9 @@ def generate_maze(width, height):
             current_cell_index = stack.pop()
         else:
             break
-    plt.imshow(maze.maze, interpolation="None", cmap="gray")
-    ax = plt.gca()
-    ax.axes.get_xaxis().set_visible(False)
-    ax.axes.get_yaxis().set_visible(False)
-    plt.savefig("maze.pdf", dpi=666)
+    plotter = MazeVisualizerPIL(maze, 5)
+    plotter.plot_walls()
+    plotter.save_plot()
 
 
 if __name__ == '__main__':
