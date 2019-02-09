@@ -124,11 +124,11 @@ class MazeVisualizerPIL:
                 if cell.walls[Direction.W]:
                     self.draw.line((top_left_pixel, bottom_left_pixel), fill, width)
 
-    def save_plot(self):
-        self.img.save("test.png")
+    def save_plot(self, filename):
+        self.img.save(filename)
 
 
-def generate_maze(width, height):
+def generate_maze(width, height, filename):
     maze = Maze(width, height)
     stack = Stack()
     current_cell_index = CellIndex(0, 0)
@@ -149,16 +149,17 @@ def generate_maze(width, height):
             break
     plotter = MazeVisualizerPIL(maze, 5)
     plotter.plot_walls()
-    plotter.save_plot()
+    plotter.save_plot(filename)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate mazes.")
     parser.add_argument("width", type=int, help="Width of the maze in cells")
     parser.add_argument("height", type=int, help="Height of the maze in cells")
+    parser.add_argument("-f", "--filename", help="Filename that is used to save the maze", default="maze.png")
     parser.add_argument("-s", "--seed", help="Seed for random generator")
     args = parser.parse_args()
 
     seed(args.seed)
 
-    generate_maze(args.width, args.height)
+    generate_maze(args.width, args.height, args.filename)
