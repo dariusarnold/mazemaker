@@ -9,7 +9,7 @@ class Color(enum.IntEnum):
     black = 0
 
 
-def _create_fitting_image(text, font, fill_color):
+def _create_fitting_image(text, font, border_size, fill_color=Color.white):
     """
     Create an image with the dimensions of the text and 32 pixels border around it. The whole image will be
     filled with fill colour.
@@ -18,7 +18,7 @@ def _create_fitting_image(text, font, fill_color):
     img = Image.new("L", img_size, color=fill_color)
     draw = ImageDraw.Draw(img)
     width, height = draw.textsize(text, font)
-    text_size = (width + 64, height + 64)
+    text_size = (width + 2*border_size, height + 2*border_size)
     img = img.resize(text_size)
     return img
 
@@ -48,8 +48,8 @@ def text_mask(filename, text, fontsize, invert=False):
         font = ImageFont.truetype("fonts/Unicorn.ttf", size=fontsize)
     except IOError:
         sys.exit("Please place Unicorn.ttf, containing the Unicorn font made by Nick Curtis. in the fonts folder.")
-    img = _create_fitting_image(text, font, Color.white)
-    _draw_text_outline(img, font, text, fill_color, line_color)
+    img = _create_fitting_image(text, font, bordersize)
+    _draw_text_outline(img, font, text, fill_color, line_color, origin=(bordersize, bordersize))
     img.save(filename)
 
 
@@ -58,6 +58,7 @@ if __name__ == '__main__':
     parser.add_argument("text", type=str, help="Text to be used as mask. Will be converted to lower case")
     parser.add_argument("filename", type=str, default="mask.png", help="Filename under which the mask image will be saved. ")
     parser.add_argument("-f", "--fontsize", type=int, default=32, help="Font size to use for text. A size < 16 will be too small for letters to connect.")
+    parser.add_argument("-b", "--bordersize", type=int, default=32, help="Thickness of space around the text bounding box to the image border in pixels. ")
     parser.add_argument("-i", "--invert", action="store_true", help="By default the maze will be generated within the letters. If this is set to true, the letters will be the forbidden space and the maze will be generated around it.")
 
     args = parser.parse_args()
@@ -65,6 +66,6 @@ if __name__ == '__main__':
     if not args.filename.endswith(".png"):
         args.filename = f"{args.filename}.png"
 
-    text_mask(args.filename, args.text, args.fontsize, args.invert)
+    text_mask(args.filename, args.text, args.fontsize, args.bordersize, args.invert)
 
 # TODO: add script that converts an image to the expected format: bw, 8bpp
