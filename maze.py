@@ -107,7 +107,10 @@ class Maze:
 
     def get_mask(self, cell_index):
         """Return the mask value at cell_index """
-        return self.mask[cell_index.y, cell_index.x]
+        if self.mask is not None:
+            return self.mask[cell_index.y, cell_index.x]
+        # return True (allowed cell) if no mask was set
+        else: return True
 
 
 class MazeVisualizerPIL:
