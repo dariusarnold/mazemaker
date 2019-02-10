@@ -182,10 +182,21 @@ if __name__ == '__main__':
     parser.add_argument("-f", "--filename", help="Filename that is used to save the maze.", default="maze.png")
     parser.add_argument("-m", "--maskimg", default=None, help="Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.")
     parser.add_argument("-s", "--seed", help="Seed for random generator.")
-    # TODO add start cell argument
+    parser.add_argument("-c", "--start", nargs=2, type=int, help="x y coordinate of the start cell in the maze")
     args = parser.parse_args()
 
     seed(args.seed)
+
+    # extract required arguments
+    arguments = {}
+    arguments["output_filename"] = args.filename
+    arguments["width"] = args.width
+    arguments["height"] = args.height
+
+    # extract optional arguments
+    if args.start is not None:
+        start_cell_index = CellIndex(x=args.start[0], y=args.start[1])
+        arguments["start_cell_index"] = start_cell_index
 
     if args.maskimg is not None:
         try:
@@ -194,6 +205,8 @@ if __name__ == '__main__':
             sys.exit("Can't open maskimage.")
         mask = np.asarray(img, dtype=bool)
         width, height = img.size
-        generate_maze(width, height, args.filename, mask)
-    else:
-        generate_maze(args.width, args.height, args.filename)
+        arguments["width"] = width
+        arguments["height"] = height
+        arguments["mask"] = mask
+    
+    generate_maze(**arguments)
