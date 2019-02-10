@@ -179,37 +179,48 @@ def generate_maze(width, height, output_filename, start_cell_index=None, mask=No
 
 
 if __name__ == '__main__':
+    # top level parser
     parser = argparse.ArgumentParser(description="Generate mazes.")
-    parser.add_argument("width", type=int, help="Width of the maze in cells.")
-    parser.add_argument("height", type=int, help="Height of the maze in cells.")
     parser.add_argument("-f", "--filename", help="Filename that is used to save the maze.", default="maze.png")
-    parser.add_argument("-m", "--maskimg", default=None, help="Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.")
-    parser.add_argument("-s", "--seed", help="Seed for random generator.")
+    parser.add_argument("-s", "--seed", default=None, help="Seed for random generator.")
     parser.add_argument("-c", "--start", nargs=2, type=int, help="x y coordinate of the start cell in the maze")
+    # sub parsers
+    subparsers = parser.add_subparsers(dest="command", help="Select between just maze generation with width/height or generating a maze with a mask.")
+
+    parser_generate = subparsers.add_parser("generate", help="Generate a maze within a rectangle.")
+    parser_generate.add_argument("width", type=int, help="Width of the maze in cells.")
+    parser_generate.add_argument("height", type=int, help="Height of the maze in cells.")
+
+    parser_mask = subparsers.add_parser("mask", help="Apply mask to limit maze.")
+    parser_mask.add_argument("-m", "--maskimg", default=None, help="Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.")
     args = parser.parse_args()
 
-    seed(args.seed)
+    if seed is not None:
+        seed(args.seed)
 
-    # extract required arguments
+    # extract general arguments which can be used with both parsers
     arguments = {}
     arguments["output_filename"] = args.filename
-    arguments["width"] = args.width
-    arguments["height"] = args.height
-
-    # extract optional arguments
     if args.start is not None:
         start_cell_index = CellIndex(x=args.start[0], y=args.start[1])
         arguments["start_cell_index"] = start_cell_index
 
-    if args.maskimg is not None:
-        try:
-            img = Image.open(args.maskimg)
-        except IOError:
-            sys.exit("Can't open maskimage.")
-        mask = np.asarray(img, dtype=bool)
-        width, height = img.size
-        arguments["width"] = width
-        arguments["height"] = height
-        arguments["mask"] = mask
-    
+    # extract general maze options
+    if args.command.lower() == "generate":
+        arguments["width"] = args.width
+        arguments["height"] = args.height
+
+    # extract mask maze options
+    elif args.command.lower() == "mask":
+        if args.maskimg is not None:
+            try:
+                img = Image.open(args.maskimg)
+            except IOError:
+                sys.exit("Can't open maskimage.")
+            mask = np.asarray(img, dtype=bool)
+            width, height = img.size
+            arguments["width"] = width
+            arguments["height"] = height
+            arguments["mask"] = mask
+
     generate_maze(**arguments)
