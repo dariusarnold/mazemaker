@@ -69,7 +69,7 @@ class Maze:
         return neighbour_cell_indices
 
     def index_in_grid(self, cell_index):
-        return 0 <= cell_index.y < self.width and 0 <= cell_index.x < self.height
+        return 0 <= cell_index.x < self.width and 0 <= cell_index.y < self.height
 
     def get_unvisited_neighbours(self, cell_index):
         neighbour_cell_indices = self.get_neighbour_cell_indices(cell_index)
