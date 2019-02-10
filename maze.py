@@ -134,23 +134,27 @@ class MazeVisualizerPIL:
                 if self.maze.get_mask(CellIndex(x=hor_index, y=ver_index)) == False:
                     self.draw.rectangle((top_left_pixel, bottom_right_pixel), outline=self.fill_color, fill=self.fill_color)
                 cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
-                if cell.walls[Direction.N]:
-                    self.draw.line((top_left_pixel, top_right_pixel), self.fill_color, self.line_width)
-                if cell.walls[Direction.E]:
-                    self.draw.line((top_right_pixel, bottom_right_pixel), self.fill_color, self.line_width)
-                if cell.walls[Direction.S]:
-                    self.draw.line((bottom_right_pixel, bottom_left_pixel), self.fill_color, self.line_width)
-                if cell.walls[Direction.W]:
-                    self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
+                if cell.visited is True:
+                    if cell.walls[Direction.N]:
+                        self.draw.line((top_left_pixel, top_right_pixel), self.fill_color, self.line_width)
+                    if cell.walls[Direction.E]:
+                        self.draw.line((top_right_pixel, bottom_right_pixel), self.fill_color, self.line_width)
+                    if cell.walls[Direction.S]:
+                        self.draw.line((bottom_right_pixel, bottom_left_pixel), self.fill_color, self.line_width)
+                    if cell.walls[Direction.W]:
+                        self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
 
     def save_plot(self, filename):
         self.img.save(filename)
 
 
-def generate_maze(width, height, output_filename, mask=None):
+def generate_maze(width, height, output_filename, start_cell_index=None, mask=None):
     maze = Maze(width, height) if mask is None else Maze(width, height, mask)
     stack = Stack()
-    current_cell_index = CellIndex(25, 34)
+    if start_cell_index is None:
+        current_cell_index = CellIndex(0, 0)
+    else:
+        current_cell_index = start_cell_index
     maze.set_visited(current_cell_index)
     while True:
         unvisited_cells = maze.get_unvisited_neighbours(current_cell_index)
