@@ -1,8 +1,9 @@
 import argparse
+import enum
+import itertools
 import sys
 from collections import namedtuple
 from random import choice, seed
-import enum
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -10,16 +11,16 @@ from PIL import Image, ImageDraw
 
 class Stack:
     def __init__(self):
-        self.l = []
+        self._list = []
 
     def push(self, value):
-        self.l.append(value)
+        self._list.append(value)
 
     def pop(self):
-        return self.l.pop()
+        return self._list.pop()
 
     def __len__(self):
-        return len(self.l)
+        return len(self._list)
 
 
 class Direction(enum.IntEnum):
@@ -57,6 +58,7 @@ class Cell:
     def __repr__(self):
         return f"Cell({self.walls}, visited={self.visited})"
 
+
 class Maze:
     def __init__(self, width, height, mask=None):
         """
@@ -83,10 +85,9 @@ class Maze:
 
     def get_unvisited_neighbours(self, cell_index):
         neighbour_cell_indices = self.get_neighbour_cell_indices(cell_index)
-        unvisited_cells = [index for index in neighbour_cell_indices if self.get_cell(index).visited == False]
+        unvisited_cells = [index for index in neighbour_cell_indices if self.get_cell(index).visited is False]
         # TODO inherit from Maze to implement masked maze and override this function
-        if self.mask is not None:
-            unvisited_cells = [index for index in unvisited_cells if self.get_mask(index) == True]
+        unvisited_cells = [index for index in unvisited_cells if self.get_mask(index) == True]
         return unvisited_cells
 
     def set_visited(self, cell_index):
@@ -110,7 +111,8 @@ class Maze:
         if self.mask is not None:
             return self.mask[cell_index.y, cell_index.x]
         # return True (allowed cell) if no mask was set
-        else: return True
+        else:
+            return True
 
 
 class MazeVisualizerPIL:
@@ -128,36 +130,32 @@ class MazeVisualizerPIL:
         self.draw = ImageDraw.Draw(self.img)
 
     def plot_walls(self):
-        for hor_index in range(self.maze.width):
-            for ver_index in range(self.maze.height):
-                top_left_pixel = (hor_index*self.cell_size_pixels, ver_index*self.cell_size_pixels)
-                top_right_pixel = ((hor_index+1)*self.cell_size_pixels, ver_index*self.cell_size_pixels)
-                bottom_left_pixel = (hor_index*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
-                bottom_right_pixel = ((hor_index+1)*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
-                if self.maze.get_mask(CellIndex(x=hor_index, y=ver_index)) == False:
-                    self.draw.rectangle((top_left_pixel, bottom_right_pixel), outline=self.fill_color, fill=self.fill_color)
-                cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
-                if cell.visited is True:
-                    if cell.walls[Direction.N]:
-                        self.draw.line((top_left_pixel, top_right_pixel), self.fill_color, self.line_width)
-                    if cell.walls[Direction.E]:
-                        self.draw.line((top_right_pixel, bottom_right_pixel), self.fill_color, self.line_width)
-                    if cell.walls[Direction.S]:
-                        self.draw.line((bottom_right_pixel, bottom_left_pixel), self.fill_color, self.line_width)
-                    if cell.walls[Direction.W]:
-                        self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
+        for hor_index, ver_index in itertools.product(range(self.maze.width), range(self.maze.height)):
+            top_left_pixel = (hor_index*self.cell_size_pixels, ver_index*self.cell_size_pixels)
+            top_right_pixel = ((hor_index+1)*self.cell_size_pixels, ver_index*self.cell_size_pixels)
+            bottom_left_pixel = (hor_index*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
+            bottom_right_pixel = ((hor_index+1)*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
+            if not self.maze.get_mask(CellIndex(x=hor_index, y=ver_index)):
+                self.draw.rectangle((top_left_pixel, bottom_right_pixel), outline=self.fill_color, fill=self.fill_color)
+            cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
+            if cell.visited is True:
+                if cell.walls[Direction.N]:
+                    self.draw.line((top_left_pixel, top_right_pixel), self.fill_color, self.line_width)
+                if cell.walls[Direction.E]:
+                    self.draw.line((top_right_pixel, bottom_right_pixel), self.fill_color, self.line_width)
+                if cell.walls[Direction.S]:
+                    self.draw.line((bottom_right_pixel, bottom_left_pixel), self.fill_color, self.line_width)
+                if cell.walls[Direction.W]:
+                    self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
 
     def save_plot(self, filename):
         self.img.save(filename)
 
 
 def generate_maze(width, height, output_filename, start_cell_index=None, mask=None):
-    maze = Maze(width, height) if mask is None else Maze(width, height, mask)
+    maze = Maze(width, height, mask)
     stack = Stack()
-    if start_cell_index is None:
-        current_cell_index = CellIndex(0, 0)
-    else:
-        current_cell_index = start_cell_index
+    current_cell_index = start_cell_index
     maze.set_visited(current_cell_index)
     while True:
         unvisited_cells = maze.get_unvisited_neighbours(current_cell_index)
@@ -183,7 +181,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate mazes.")
     parser.add_argument("-f", "--filename", help="Filename that is used to save the maze.", default="maze.png")
     parser.add_argument("-s", "--seed", default=None, help="Seed for random generator.")
-    parser.add_argument("-c", "--start", nargs=2, type=int, help="x y coordinate of the start cell in the maze")
+    parser.add_argument("-c", "--start", nargs=2, type=int, default=[0, 0], help="x y coordinate of the start cell in the maze")
     # sub parsers
     subparsers = parser.add_subparsers(dest="command", help="Select between just maze generation with width/height or generating a maze with a mask.")
 
@@ -199,11 +197,8 @@ if __name__ == '__main__':
         seed(args.seed)
 
     # extract general arguments which can be used with both parsers
-    arguments = {}
-    arguments["output_filename"] = args.filename
-    if args.start is not None:
-        start_cell_index = CellIndex(x=args.start[0], y=args.start[1])
-        arguments["start_cell_index"] = start_cell_index
+    arguments = {"output_filename": args.filename,
+                 "start_cell_index": CellIndex(x=args.start[0], y=args.start[1])}
 
     # extract general maze options
     if args.command.lower() == "generate":
@@ -216,11 +211,10 @@ if __name__ == '__main__':
             try:
                 img = Image.open(args.maskimg)
             except IOError:
-                sys.exit("Can't open maskimage.")
+                sys.exit(f"Can't open maskimage {args.maskimg}.")
             mask = np.asarray(img, dtype=bool)
-            width, height = img.size
-            arguments["width"] = width
-            arguments["height"] = height
             arguments["mask"] = mask
+            arguments["width"] = img.size[0]
+            arguments["height"] = img.size[1]
 
     generate_maze(**arguments)
