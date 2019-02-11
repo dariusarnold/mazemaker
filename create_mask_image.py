@@ -79,8 +79,8 @@ def text_mask(filename, text, fontsize, bordersize=32, invert=False):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Generate a mask image to be used with the maze generator. This script allows text to be used as a mask.")
     parser.add_argument("text", type=str, help="Text to be used as mask. Will be converted to lower case")
-    parser.add_argument("filename", type=str, default="mask.png", help="Filename under which the mask image will be saved. ")
-    parser.add_argument("-f", "--fontsize", type=int, default=32, help="Font size in points to use for text. A size < 16 will be too small for letters to connect.")
+    parser.add_argument("-f", "--filename", type=str, default="mask.png", help="Filename under which the mask image will be saved. ")
+    parser.add_argument("-s", "--fontsize", type=int, default=32, help="Font size in points to use for text. A size < 16 will be too small for letters to connect.")
     parser.add_argument("-b", "--bordersize", type=int, default=32, help="Thickness of space around the text bounding box to the image border in pixels. ")
     parser.add_argument("-i", "--invert", action="store_true", help="By default the maze will be generated within the letters. If this is set to true, the letters will be the forbidden space and the maze will be generated around it.")
 
