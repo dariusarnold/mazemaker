@@ -40,7 +40,11 @@ def _draw_text_outline(img, font, text, fill_color, line_color, origin):
     """
     draw = ImageDraw.Draw(img)
     draw.fontmode = "1"
-    x, y = 32, 32
+    # correct for font offset
+    x_offset, y_offset = font.getoffset(text)
+    # These values were tweaked by hand to get a better centered text
+    x, y = (origin[0]-2*x_offset, origin[1]-y_offset//2)
+    origin = (x, y)
     # draw border
     draw.text((x - 1, y), text, font=font, fill=line_color)
     draw.text((x + 1, y), text, font=font, fill=line_color)
