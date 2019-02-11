@@ -116,12 +116,12 @@ class Maze:
 
 
 class MazeVisualizerPIL:
-    def __init__(self, maze, cell_size_pixels):
+    def __init__(self, maze, cell_size_pixels, line_width_pixels):
         self.maze = maze
         self.cell_size_pixels = cell_size_pixels
         self._init_plot()
         self.fill_color = 0
-        self.line_width = 1
+        self.line_width = line_width_pixels
 
     def _init_plot(self):
         width = self.maze.width*self.cell_size_pixels+1
@@ -152,7 +152,7 @@ class MazeVisualizerPIL:
         self.img.save(filename)
 
 
-def generate_maze(width, height, output_filename, cell_size_pixels=5, start_cell_index=None, mask=None):
+def generate_maze(width, height, output_filename, cell_size_pixels=5, line_width_pixels=1, start_cell_index=None, mask=None):
     maze = Maze(width, height, mask)
     stack = Stack()
     current_cell_index = start_cell_index
@@ -171,7 +171,7 @@ def generate_maze(width, height, output_filename, cell_size_pixels=5, start_cell
             current_cell_index = stack.pop()
         else:
             break
-    plotter = MazeVisualizerPIL(maze, cell_size_pixels)
+    plotter = MazeVisualizerPIL(maze, cell_size_pixels, line_width_pixels)
     plotter.plot_walls()
     plotter.save_plot(output_filename)
 
@@ -183,6 +183,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--seed", default=None, help="Seed for random generator.")
     parser.add_argument("-o", "--origin", nargs=2, type=int, default=[0, 0], help="x y coordinate of the start cell in the maze")
     parser.add_argument("-c", "--cellsize", type=int, default=5, help="Cell size in pixels for plotting.")
+    parser.add_argument("-l", "--linewidth", type=int, default=1, help="Line width of cell walls for plotting in pixels.")
     # sub parsers
     subparsers = parser.add_subparsers(dest="command", help="Select between just maze generation with width/height or generating a maze with a mask.")
 
@@ -200,7 +201,8 @@ if __name__ == '__main__':
     # extract general arguments which can be used with both parsers
     arguments = {"output_filename": args.filename,
                  "start_cell_index": CellIndex(x=args.origin[0], y=args.origin[1]),
-                 "cell_size_pixels": args.cellsize}
+                 "cell_size_pixels": args.cellsize,
+                 "line_width_pixels": args.linewidth}
 
     # extract general maze options
     if args.command.lower() == "generate":
