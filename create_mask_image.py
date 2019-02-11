@@ -9,12 +9,12 @@ class Color(enum.IntEnum):
     black = 0
 
 
-def _create_fitting_image(text, font, border_size, fill_color=Color.white):
+def _create_fitting_image(text, font, bordersize, fill_color=Color.white):
     """
     Create an image that fits the given text.
     :param text: Text to draw on image
     :param font: PIL.ImageFont instance
-    :param border_size: Size of the border in pixels
+    :param bordersize: Size of the border in pixels
     :param fill_color: Color of the image background
     :return: PIL.Image instance large enough to fit text on it with a distance border_size to the border of the image
     in every direction
@@ -22,9 +22,9 @@ def _create_fitting_image(text, font, border_size, fill_color=Color.white):
     img_size = (1, 1)
     img = Image.new("L", img_size, color=fill_color)
     draw = ImageDraw.Draw(img)
-    width, height = draw.textsize(text, font)
-    text_size = (width + 2*border_size, height + 2*border_size)
-    img = img.resize(text_size)
+    textwidth, textheight = draw.textsize(text, font)
+    img_size = (textwidth + 2 * bordersize, textheight + 2 * bordersize)
+    img = img.resize(img_size)
     return img
 
 
