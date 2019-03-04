@@ -2,7 +2,7 @@ import argparse
 import sys
 import enum
 
-from PIL import Image, ImageDraw, ImageFont, ImageOps
+from PIL import Image, ImageDraw, ImageFont
 
 class Color(enum.IntEnum):
     white = 255
@@ -14,7 +14,7 @@ def _create_fitting_image(text, font, bordersize, fill_color=Color.white):
     Create an image that fits the given text.
     :param text: Text to draw on image
     :param font: PIL.ImageFont instance
-    :param bordersize: Size of the border in pixels
+    :param bordersize: Size of the border around the text in pixels
     :param fill_color: Color of the image background
     :return: PIL.Image instance large enough to fit text on it with a distance border_size to the border of the image
     in every direction
@@ -39,6 +39,7 @@ def _draw_text_outline(img, font, text, fill_color, line_color, origin):
     :param origin: (xy) coordinate tuple where the top left point of the text bounding box should be placed
     """
     draw = ImageDraw.Draw(img)
+    # set to render text unaliased (https://mail.python.org/pipermail/image-sig/2005-August/003497.html)
     draw.fontmode = "1"
     # correct for font offset
     x_offset, y_offset = font.getoffset(text)
@@ -56,12 +57,14 @@ def _draw_text_outline(img, font, text, fill_color, line_color, origin):
 
 def text_mask(filename, text, fontsize, bordersize=32, invert=False):
     """
-    Create mask image from text
+    Create mask image from text. A mask image is used during maze creation to mark areas where the algorithm
+    wont go. Black pixels mark cells the algorithm wont move into, i.e. the represent walls.
     :param filename: Name under which to save the image
-    :param text: String to draw on image. Image will be resized to fit the text.
+    :param text: String to draw on image. Image will be created with the correct size to fit the text.
     :param fontsize: Font size to use for the text.
     :param bordersize: Thickness of space around the text bounding box to the image border in pixels.
-    :param invert: If False (default), the letters will be white inside, so a maze can be generated inside them.
+    :param invert: If False (default), the letters will be white inside, with a black outline,
+    so a maze can be generated inside them.
     If true, the letters will be full black and the maze can be generated around the text.
     """
     text = text.lower()
@@ -72,21 +75,33 @@ def text_mask(filename, text, fontsize, bordersize=32, invert=False):
         fill_color = Color.white
         line_color = Color.black
     try:
+        # TODO add option to load other font
         font = ImageFont.truetype("fonts/Unicorn.ttf", size=fontsize)
     except IOError:
-        sys.exit("Please place Unicorn.ttf, containing the Unicorn font made by Nick Curtis. in the fonts folder.")
+        sys.exit("Please place Unicorn.ttf, containing the Unicorn font made by Nick Curtis in the fonts folder.")
     img = _create_fitting_image(text, font, bordersize)
     _draw_text_outline(img, font, text, fill_color, line_color, origin=(bordersize, bordersize))
     img.save(filename)
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Generate a mask image to be used with the maze generator. This script allows text to be used as a mask.")
+    parser = argparse.ArgumentParser(description="Generate a mask image to be used with the maze generator."
+                                                 " This script creates a mask image from the text string."
+                                                 "Areas in black will be treated as walls by the algorithm, acting as a"
+                                                 "border of the maze generation.")
     parser.add_argument("text", type=str, help="Text to be used as mask. Will be converted to lower case")
-    parser.add_argument("-f", "--filename", type=str, default="mask.png", help="Filename under which the mask image will be saved. ")
-    parser.add_argument("-s", "--fontsize", type=int, default=32, help="Font size in points to use for text. A size < 16 will be too small for letters to connect.")
-    parser.add_argument("-b", "--bordersize", type=int, default=32, help="Thickness of space around the text bounding box to the image border in pixels. ")
-    parser.add_argument("-i", "--invert", action="store_true", help="By default the maze will be generated within the letters. If this is set to true, the letters will be the forbidden space and the maze will be generated around it.")
+    parser.add_argument("-f", "--filename", type=str, default="mask.png",
+                        help="Filename under which the mask image will be saved. ")
+    parser.add_argument("-s", "--fontsize", type=int, default=32,
+                        help="Font size in points to use for text. A size <16 will be too small for letters to connect"
+                             " with the default Unicorn font.")
+    parser.add_argument("-b", "--bordersize", type=int, default=32,
+                        help="Thickness of space around the text bounding box to the image border in pixels.")
+    parser.add_argument("-i", "--invert", action="store_true",
+                        help="Flag argument. If not specified (default) the letters will be white with a black border. "
+                             "This means the maze can be generated within the letters. "
+                             "Otherwise, if this option is specified, the letters will be the completely black and the "
+                             "maze will be generated around them.")
 
     args = parser.parse_args()
 
