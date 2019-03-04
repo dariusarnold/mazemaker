@@ -205,6 +205,9 @@ if __name__ == '__main__':
                  "line_width_pixels": args.linewidth}
 
     # extract general maze options
+    if args.command is None:
+        parser.print_help()
+        sys.exit()
     if args.command.lower() == "generate":
         arguments["width"] = args.width
         arguments["height"] = args.height
