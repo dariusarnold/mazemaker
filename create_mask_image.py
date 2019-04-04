@@ -59,7 +59,6 @@ def text_mask(filename, text, fontsize, bordersize=32, invert=False):
     """
     Create mask image from text. A mask image is used during maze creation to mark areas where the algorithm
     wont go. Black pixels mark cells the algorithm wont move into, i.e. the represent walls.
-    :param filename: Name under which to save the image
     :param text: String to draw on image. Image will be created with the correct size to fit the text.
     :param fontsize: Font size to use for the text.
     :param bordersize: Thickness of space around the text bounding box to the image border in pixels.
@@ -81,7 +80,17 @@ def text_mask(filename, text, fontsize, bordersize=32, invert=False):
         sys.exit("Please place Unicorn.ttf, containing the Unicorn font made by Nick Curtis in the fonts folder.")
     img = _create_fitting_image(text, font, bordersize)
     _draw_text_outline(img, font, text, fill_color, line_color, origin=(bordersize, bordersize))
-    img.save(filename)
+    return img
+
+
+def save_image_to_disk(image, filename):
+    """
+    Save given image
+    :param filename:
+    :param image:
+    :return:
+    """
+    image.save(filename)
 
 
 if __name__ == '__main__':
@@ -108,6 +117,7 @@ if __name__ == '__main__':
     if not args.filename.endswith(".png"):
         args.filename = f"{args.filename}.png"
 
-    text_mask(args.filename, args.text, args.fontsize, args.bordersize, args.invert)
+    img = text_mask(args.text, args.fontsize, args.bordersize, args.invert)
+    save_image_to_disk(img, args.filename)
 
 # TODO: add script that converts an image to the expected format: bw, 8bpp
