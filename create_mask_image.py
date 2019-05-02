@@ -55,7 +55,7 @@ def _draw_text_outline(img, font, text, fill_color, line_color, origin):
     draw.text(origin, text, font=font, fill=fill_color)
 
 
-def text_mask(filename, text, fontsize, bordersize=32, invert=False):
+def text_mask(text, fontsize, bordersize=32, invert=False):
     """
     Create mask image from text. A mask image is used during maze creation to mark areas where the algorithm
     wont go. Black pixels mark cells the algorithm wont move into, i.e. the represent walls.
