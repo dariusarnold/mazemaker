@@ -152,7 +152,7 @@ class MazeVisualizerPIL:
         self.img.save(filename)
 
 
-def generate_maze(width, height, output_filename, cell_size_pixels=5, line_width_pixels=1, start_cell_index=None, mask=None):
+def generate_maze(width, height, start_cell_index=None, mask=None):
     maze = Maze(width, height, mask)
     stack = Stack()
     if start_cell_index is None:
@@ -173,9 +173,13 @@ def generate_maze(width, height, output_filename, cell_size_pixels=5, line_width
             current_cell_index = stack.pop()
         else:
             break
-    plotter = MazeVisualizerPIL(maze, cell_size_pixels, line_width_pixels)
-    plotter.plot_walls()
-    plotter.save_plot(output_filename)
+    return maze
+
+
+def plot_maze(maze, output_filename, cell_size_pixels=5, line_width_pixels=1):
+    visualizer = MazeVisualizerPIL(maze, cell_size_pixels, line_width_pixels)
+    visualizer.plot_walls()
+    visualizer.save_plot(output_filename)
 
 
 if __name__ == '__main__':
@@ -200,30 +204,23 @@ if __name__ == '__main__':
     if seed is not None:
         seed(args.seed)
 
-    # extract general arguments which can be used with both parsers
-    arguments = {"output_filename": args.filename,
-                 "start_cell_index": CellIndex(x=args.origin[0], y=args.origin[1]),
-                 "cell_size_pixels": args.cellsize,
-                 "line_width_pixels": args.linewidth}
-
-    # extract general maze options
     if args.command is None:
         parser.print_help()
         sys.exit()
-    if args.command.lower() == "generate":
-        arguments["width"] = args.width
-        arguments["height"] = args.height
 
     # extract mask maze options
-    elif args.command.lower() == "mask":
+    mask = None
+    if args.command.lower() == "mask":
         if args.maskimg is not None:
             try:
                 img = Image.open(args.maskimg)
             except IOError:
                 sys.exit(f"Can't open maskimage {args.maskimg}.")
             mask = np.asarray(img, dtype=bool)
-            arguments["mask"] = mask
-            arguments["width"] = img.size[0]
-            arguments["height"] = img.size[1]
+            args.width = img.size[0]
+            args.height = img.size[1]
+        else:
+            sys.exit("No mask image specified.")
 
-    generate_maze(**arguments)
+    maze = generate_maze(args.width, args.height, CellIndex(x=args.origin[0], y=args.origin[1]), mask)
+    plot_maze(maze, args.filename, cell_size_pixels=args.cellsize, line_width_pixels=args.linewidth)
