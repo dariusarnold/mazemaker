@@ -7,7 +7,7 @@ from random import choice, seed
 from typing import List
 
 import numpy as np
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageColor
 
 
 class Stack:
@@ -176,9 +176,10 @@ class MazeVisualizerPIL:
         """
         self.maze = maze
         self.cell_size_pixels = cell_size_pixels
-        self._init_plot()
-        self.fill_color = 0
+        self.bg_color = ImageColor.getrgb("white")
+        self.fill_color = ImageColor.getrgb("black")
         self.line_width = line_width_pixels
+        self._init_plot()
 
     def _init_plot(self):
         """
@@ -186,7 +187,7 @@ class MazeVisualizerPIL:
         """
         width = self.maze.width * self.cell_size_pixels + 1
         height = self.maze.height * self.cell_size_pixels + 1
-        self.img = Image.new(mode="L", size=(width, height), color=255)
+        self.img = Image.new(mode="RGB", size=(width, height), color=self.bg_color)
         self.draw = ImageDraw.Draw(self.img)
 
     def plot_walls(self):
@@ -194,10 +195,8 @@ class MazeVisualizerPIL:
         Plot the walls of the maze cells on the initialized plot.
         """
         for hor_index, ver_index in itertools.product(range(self.maze.width), range(self.maze.height)):
-            top_left_pixel = (hor_index * self.cell_size_pixels, ver_index * self.cell_size_pixels)
-            top_right_pixel = ((hor_index + 1) * self.cell_size_pixels, ver_index * self.cell_size_pixels)
-            bottom_left_pixel = (hor_index * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
-            bottom_right_pixel = ((hor_index + 1) * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
+            top_left_pixel, top_right_pixel, bottom_left_pixel, bottom_right_pixel = self._calc_cell_bbox(hor_index,
+                                                                                                          ver_index)
             if not self.maze.get_mask(CellIndex(x=hor_index, y=ver_index)):
                 self.draw.rectangle((top_left_pixel, bottom_right_pixel), outline=self.fill_color, fill=self.fill_color)
             cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
@@ -210,6 +209,13 @@ class MazeVisualizerPIL:
                     self.draw.line((bottom_right_pixel, bottom_left_pixel), self.fill_color, self.line_width)
                 if cell.walls[Direction.W]:
                     self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
+
+    def _calc_cell_bbox(self, hor_index: int, ver_index: int):
+        top_left_pixel = (hor_index * self.cell_size_pixels, ver_index * self.cell_size_pixels)
+        top_right_pixel = ((hor_index + 1) * self.cell_size_pixels, ver_index * self.cell_size_pixels)
+        bottom_left_pixel = (hor_index * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
+        bottom_right_pixel = ((hor_index + 1) * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
+        return top_left_pixel, top_right_pixel, bottom_left_pixel, bottom_right_pixel
 
     def save_plot(self, filename: str):
         """
