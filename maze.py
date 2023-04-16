@@ -155,6 +155,8 @@ class MazeVisualizerPIL:
 def generate_maze(width, height, output_filename, cell_size_pixels=5, line_width_pixels=1, start_cell_index=None, mask=None):
     maze = Maze(width, height, mask)
     stack = Stack()
+    if start_cell_index is None:
+        start_cell_index = CellIndex(x=0, y=0)
     current_cell_index = start_cell_index
     maze.set_visited(current_cell_index)
     while True:
