@@ -24,7 +24,8 @@ def _create_fitting_image(text: str, font: ImageFont.ImageFont, bordersize: int,
     img_size = (1, 1)
     img = Image.new("L", img_size, color=fill_color)
     draw = ImageDraw.Draw(img)
-    textwidth, textheight = draw.textsize(text, font)
+    left, top, right, bottom = draw.textbbox((0, 0), text, font)
+    textwidth, textheight = right - left, bottom - top
     img_size = (textwidth + 2 * bordersize, textheight + 2 * bordersize)
     img = img.resize(img_size)
     return img
@@ -44,7 +45,7 @@ def _draw_text_outline(img: Image.Image, font: ImageFont.ImageFont, text: str, f
     # set to render text unaliased (https://mail.python.org/pipermail/image-sig/2005-August/003497.html)
     draw.fontmode = "1"
     # correct for font offset
-    x_offset, y_offset = font.getoffset(text)
+    x_offset, y_offset, _, _ = font.getbbox(text)
     # These values were tweaked by hand to get a better centered text
     x, y = (origin[0]-2*x_offset, origin[1]-y_offset//2)
     origin = (x, y)
