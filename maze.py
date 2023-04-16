@@ -4,6 +4,7 @@ import itertools
 import sys
 from collections import namedtuple
 from random import choice, seed
+from typing import List
 
 import numpy as np
 from PIL import Image, ImageDraw
@@ -50,7 +51,7 @@ class CellIndex(namedtuple("Cell", ("x", "y"))):
 class Cell:
     def __init__(self):
         self.visited = False
-        self.walls = [True]*4
+        self.walls = [True] * 4
 
     def remove_wall(self, direction):
         self.walls[direction.value] = False
@@ -60,8 +61,11 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, width, height, mask=None):
+    def __init__(self, width: int, height: int, mask=None):
         """
+        Initialize a Maze object with given dimensions and optional mask.
+        Masks are used to exclude certain cells from the maze generation algorithm.
+
         :param width: Number of cells in horizontal direction
         :param height: Number of cells in vertical direction
         :param mask: Bool array where False marks cells that are not visited by the algorithm
@@ -71,52 +75,105 @@ class Maze:
         self.cell_grid = np.array([Cell() for _ in range(height * width)]).reshape((height, width))
         self.mask = mask
 
-    def get_neighbour_cell_indices(self, cell_index):
+    def get_neighbour_cell_indices(self, cell_index: CellIndex) -> List[CellIndex]:
         """
-        Return the indices of all neighbour cells of cell_index that lie within the grid
+        Return the indices of all neighbour cells of cell_index that lie within the grid.
+
+        :param cell_index: The index of the cell for which neighbours are to be found
+        :return: A list of CellIndex objects representing the neighbour cells
         """
         stencil = ((0, 1), (0, -1), (1, 0), (-1, 0))
         neighbour_cell_indices = [cell_index + diff for diff in stencil]
         neighbour_cell_indices = [cell_index for cell_index in neighbour_cell_indices if self.index_in_grid(cell_index)]
         return neighbour_cell_indices
 
-    def index_in_grid(self, cell_index):
+    def index_in_grid(self, cell_index: CellIndex) -> bool:
+        """
+        Check if the cell_index is within the grid.
+
+        :param cell_index: The index of the cell to check
+        :return: True if the cell_index is within the grid, otherwise False
+        """
         return 0 <= cell_index.x < self.width and 0 <= cell_index.y < self.height
 
-    def get_unvisited_neighbours(self, cell_index):
+    def get_unvisited_neighbours(self, cell_index: CellIndex) -> List[CellIndex]:
+        """
+        Return the indices of unvisited neighbour cells of the given cell_index within the grid.
+
+        :param cell_index: The index of the cell for which unvisited neighbours are to be found
+        :return: A list of CellIndex objects representing the unvisited neighbour cells
+        """
         neighbour_cell_indices = self.get_neighbour_cell_indices(cell_index)
         unvisited_cells = [index for index in neighbour_cell_indices if self.get_cell(index).visited is False]
         # TODO inherit from Maze to implement masked maze and override this function
+        # Do not use 'is True' since the returned value is a numpy.bool_ or a Python bool
         unvisited_cells = [index for index in unvisited_cells if self.get_mask(index) == True]
         return unvisited_cells
 
-    def set_visited(self, cell_index):
+    def set_visited(self, cell_index: CellIndex):
+        """
+        Set the visited attribute of the cell at cell_index to True.
+
+        :param cell_index: The index of the cell to set as visited
+        """
         self.get_cell(cell_index).visited = True
 
-    def remove_walls(self, start_cell_index, end_cell_index):
+    def remove_walls(self, start_cell_index: CellIndex, end_cell_index: CellIndex):
+        """
+        Remove the walls between the start_cell_index and end_cell_index.
+        start_cell_index and end_cell_index must be neighbours (not diagonal).
+
+        :param start_cell_index: The index of the start cell
+        :param end_cell_index: The index of the end cell
+        """
         direction_to = Mapping.step_to_direction[end_cell_index - start_cell_index]
         direction_from = Mapping.step_to_direction[start_cell_index - end_cell_index]
         self.get_cell(start_cell_index).remove_wall(direction_to)
         self.get_cell(end_cell_index).remove_wall(direction_from)
 
-    def move(self, start_cell_index, end_cell_index):
+    def move(self, start_cell_index: CellIndex, end_cell_index: CellIndex):
+        """
+        Move from the start_cell_index to the end_cell_index by setting the end_cell_index as visited
+        and removing the walls between them.
+
+        :param start_cell_index: The index of the start cell
+        :param end_cell_index: The index of the end cell
+        """
         self.set_visited(end_cell_index)
         self.remove_walls(start_cell_index, end_cell_index)
 
-    def get_cell(self, cell_index):
+    def get_cell(self, cell_index: CellIndex) -> Cell:
+        """
+        Return the cell object at the given cell_index.
+
+        :param cell_index: The index of the cell to get
+        :return: The cell object at cell_index
+        """
         return self.cell_grid[cell_index.y, cell_index.x]
 
-    def get_mask(self, cell_index):
-        """Return the mask value at cell_index """
+    def get_mask(self, cell_index: CellIndex) -> bool:
+        """
+        Return the mask value at cell_index.
+
+        :param cell_index: The index of the cell to get the mask value for
+        :return: The mask value at cell_index (True if allowed, False if not allowed)
+        """
         if self.mask is not None:
             return self.mask[cell_index.y, cell_index.x]
-        # return True (allowed cell) if no mask was set
+        # Return True (allowed cell) if no mask was set
         else:
             return True
 
 
 class MazeVisualizerPIL:
     def __init__(self, maze, cell_size_pixels, line_width_pixels):
+        """
+        Initialize a MazeVisualizerPIL instance.
+
+        :param maze: The Maze instance to be visualized
+        :param cell_size_pixels: The size of each cell in pixels for the visualized maze
+        :param line_width_pixels: The width of the walls in pixels for the visualized maze
+        """
         self.maze = maze
         self.cell_size_pixels = cell_size_pixels
         self._init_plot()
@@ -124,17 +181,23 @@ class MazeVisualizerPIL:
         self.line_width = line_width_pixels
 
     def _init_plot(self):
-        width = self.maze.width*self.cell_size_pixels+1
-        height = self.maze.height*self.cell_size_pixels+1
+        """
+        Initialize the plot with the given dimensions and color.
+        """
+        width = self.maze.width * self.cell_size_pixels + 1
+        height = self.maze.height * self.cell_size_pixels + 1
         self.img = Image.new(mode="L", size=(width, height), color=255)
         self.draw = ImageDraw.Draw(self.img)
 
     def plot_walls(self):
+        """
+        Plot the walls of the maze cells on the initialized plot.
+        """
         for hor_index, ver_index in itertools.product(range(self.maze.width), range(self.maze.height)):
-            top_left_pixel = (hor_index*self.cell_size_pixels, ver_index*self.cell_size_pixels)
-            top_right_pixel = ((hor_index+1)*self.cell_size_pixels, ver_index*self.cell_size_pixels)
-            bottom_left_pixel = (hor_index*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
-            bottom_right_pixel = ((hor_index+1)*self.cell_size_pixels, (ver_index+1)*self.cell_size_pixels)
+            top_left_pixel = (hor_index * self.cell_size_pixels, ver_index * self.cell_size_pixels)
+            top_right_pixel = ((hor_index + 1) * self.cell_size_pixels, ver_index * self.cell_size_pixels)
+            bottom_left_pixel = (hor_index * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
+            bottom_right_pixel = ((hor_index + 1) * self.cell_size_pixels, (ver_index + 1) * self.cell_size_pixels)
             if not self.maze.get_mask(CellIndex(x=hor_index, y=ver_index)):
                 self.draw.rectangle((top_left_pixel, bottom_right_pixel), outline=self.fill_color, fill=self.fill_color)
             cell = self.maze.get_cell(CellIndex(x=hor_index, y=ver_index))
@@ -148,11 +211,24 @@ class MazeVisualizerPIL:
                 if cell.walls[Direction.W]:
                     self.draw.line((top_left_pixel, bottom_left_pixel), self.fill_color, self.line_width)
 
-    def save_plot(self, filename):
+    def save_plot(self, filename: str):
+        """
+        Save the plot to a file with the given filename.
+
+        :param filename: The name of the file to save the plot
+        """
         self.img.save(filename)
 
 
-def generate_maze(width, height, start_cell_index=None, mask=None):
+def generate_maze(width: int, height: int, start_cell_index: CellIndex = None, mask: np.ndarray = None) -> Maze:
+    """
+    Generate a maze with the given width, height, start_cell_index, and mask.
+    :param width: The width of the maze in cells
+    :param height: The height of the maze in cells
+    :param start_cell_index: The index of the start cell (default is (0, 0))
+    :param mask: An optional mask to apply to the maze
+    :return: The generated maze
+    """
     maze = Maze(width, height, mask)
     stack = Stack()
     if start_cell_index is None:
@@ -176,7 +252,14 @@ def generate_maze(width, height, start_cell_index=None, mask=None):
     return maze
 
 
-def plot_maze(maze, output_filename, cell_size_pixels=5, line_width_pixels=1):
+def plot_maze(maze: Maze, output_filename: str, cell_size_pixels: int = 5, line_width_pixels: int = 1):
+    """
+    Plot the maze and save the plot to a file.
+    :param maze: The maze to plot
+    :param output_filename: The name of the file to save the plot
+    :param cell_size_pixels: The size of each cell in pixels for plotting (default is 5)
+    :param line_width_pixels: The width of the cell walls in pixels for plotting (default is 1)
+    """
     visualizer = MazeVisualizerPIL(maze, cell_size_pixels, line_width_pixels)
     visualizer.plot_walls()
     visualizer.save_plot(output_filename)

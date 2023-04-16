@@ -1,15 +1,17 @@
 import argparse
 import sys
 import enum
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
+
 
 class Color(enum.IntEnum):
     white = 255
     black = 0
 
 
-def _create_fitting_image(text, font, bordersize, fill_color=Color.white):
+def _create_fitting_image(text: str, font: ImageFont.ImageFont, bordersize: int, fill_color: Color = Color.white) -> Image.Image:
     """
     Create an image that fits the given text.
     :param text: Text to draw on image
@@ -28,7 +30,7 @@ def _create_fitting_image(text, font, bordersize, fill_color=Color.white):
     return img
 
 
-def _draw_text_outline(img, font, text, fill_color, line_color, origin):
+def _draw_text_outline(img: Image.Image, font: ImageFont.ImageFont, text: str, fill_color: Color, line_color: Color, origin: Tuple[int, int]) -> None:
     """
     Draw text on image with an outline around the text.
     :param img: PIL.Image instance on which to draw
@@ -55,16 +57,17 @@ def _draw_text_outline(img, font, text, fill_color, line_color, origin):
     draw.text(origin, text, font=font, fill=fill_color)
 
 
-def text_mask(text, fontsize, bordersize=32, invert=False):
+def text_mask(text: str, fontsize: int, bordersize: int = 32, invert: bool = False) -> Image.Image:
     """
     Create mask image from text. A mask image is used during maze creation to mark areas where the algorithm
-    wont go. Black pixels mark cells the algorithm wont move into, i.e. the represent walls.
+    won't go. Black pixels mark cells the algorithm won't move into, i.e. the represent walls.
     :param text: String to draw on image. Image will be created with the correct size to fit the text.
     :param fontsize: Font size to use for the text.
     :param bordersize: Thickness of space around the text bounding box to the image border in pixels.
     :param invert: If False (default), the letters will be white inside, with a black outline,
     so a maze can be generated inside them.
     If true, the letters will be full black and the maze can be generated around the text.
+    :return: PIL.Image instance with the text drawn as specified.
     """
     text = text.lower()
     if invert:
@@ -83,11 +86,11 @@ def text_mask(text, fontsize, bordersize=32, invert=False):
     return img
 
 
-def save_image_to_disk(image, filename):
+def save_image_to_disk(image: Image.Image, filename: str) -> None:
     """
     Save given image
-    :param filename:
-    :param image:
+    :param image: PIL.Image instance to save.
+    :param filename: Filename under which to save the image.
     :return:
     """
     image.save(filename)
