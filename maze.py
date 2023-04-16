@@ -74,6 +74,7 @@ class Maze:
         self.height = int(height)
         self.cell_grid = np.array([Cell() for _ in range(height * width)]).reshape((height, width))
         self.mask = mask
+        self.start_cell = None
 
     def get_neighbour_cell_indices(self, cell_index: CellIndex) -> List[CellIndex]:
         """
@@ -178,6 +179,7 @@ class MazeVisualizerPIL:
         self.cell_size_pixels = cell_size_pixels
         self.bg_color = ImageColor.getrgb("white")
         self.fill_color = ImageColor.getrgb("black")
+        self.start_color = ImageColor.getrgb("green")
         self.line_width = line_width_pixels
         self._init_plot()
 
@@ -190,10 +192,16 @@ class MazeVisualizerPIL:
         self.img = Image.new(mode="RGB", size=(width, height), color=self.bg_color)
         self.draw = ImageDraw.Draw(self.img)
 
-    def plot_walls(self):
+    def plot_walls(self, color_start_cell=True):
         """
         Plot the walls of the maze cells on the initialized plot.
         """
+        # Color start cell
+        if color_start_cell:
+            x, y = self.maze.start_cell
+            top_left_pixel, _, _, bottom_right_pixel = self._calc_cell_bbox(x, y)
+            self.draw.rectangle((top_left_pixel, bottom_right_pixel), fill=self.start_color, outline=self.bg_color)
+
         for hor_index, ver_index in itertools.product(range(self.maze.width), range(self.maze.height)):
             top_left_pixel, top_right_pixel, bottom_left_pixel, bottom_right_pixel = self._calc_cell_bbox(hor_index,
                                                                                                           ver_index)
@@ -239,6 +247,7 @@ def generate_maze(width: int, height: int, start_cell_index: CellIndex = None, m
     stack = Stack()
     if start_cell_index is None:
         start_cell_index = CellIndex(x=0, y=0)
+    maze.start_cell = start_cell_index
     current_cell_index = start_cell_index
     maze.set_visited(current_cell_index)
     while True:
