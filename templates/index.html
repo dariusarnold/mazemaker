@@ -8,24 +8,33 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            margin: 0;
+            padding: 0;
         }
 
-        #maze-container {
+        form {
+            margin-bottom: 20px;
+        }
+
+        #maze-container, #mask-container {
             display: flex;
             justify-content: center;
             flex-direction: column;
             align-items: center;
         }
 
-        #mask-container {
-            display: flex;
-            justify-content: center;
-            flex-direction: column;
-            align-items: center;
+        @media (max-width: 480px) {
+            input[type="number"], input[type="text"] {
+                width: 100%;
+                max-width: 250px;
+                margin-bottom: 10px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+            }
         }
     </style>
-
-
 </head>
 <body>
 <h1>Maze Generator</h1>
@@ -37,7 +46,7 @@
     <button type="submit">Generate Maze</button>
 </form>
 <div id="maze-container">
-    <img id="maze-image" src="" alt="Generated maze" style="display:none">
+    <img id="maze-image" src="" alt="Generated maze" style="display:none; max-width: 100%;">
     <a id="download-link" href="" download="maze.png" style="display:none">Download Maze</a>
 </div>
 
@@ -56,7 +65,7 @@
     <button type="submit">Generate Mask</button>
 </form>
 <div id="mask-container">
-    <img id="mask-image" src="" alt="Generated mask" style="display:none">
+    <img id="mask-image" src="" alt="Generated mask" style="display:none; max-width: 100%;">
     <a id="download-mask-link" href="" download="mask.png" style="display:none">Download Mask</a>
 </div>
 
