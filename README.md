@@ -1,5 +1,7 @@
 ![logo](images/maze.png)
 
+# [Try it out live](https://maze.dariusarnold.de)
+
 Generate perfect (only a single solution without retracing steps) mazes
 using recursive backtracing. All cells of the maze will be connected with each
 other, meaning every point is reachable from every other point. 
@@ -7,8 +9,7 @@ other, meaning every point is reachable from every other point.
 Allows creating masked mazes by specifying an image.
 A mask image limits the possible space for maze generation and allows to create 
 mazes of arbitrary shapes. 
-   
-Also contains a script that creates mask images from text. 
+Also allows to automatically generate a mask from text.
 
 ## Requirements
 
@@ -25,7 +26,18 @@ Also contains a script that creates mask images from text.
 ` (for Linux and MacOs) or `venv\Scripts\activate` (for Windows)
 4. Install the requirements: `pip install -r requirements.txt`
 
-## General options
+### Local webserver
+
+After activating the venv, run `python flask-app.py` to create a local instance of the web page.
+
+## Usage
+
+These are the things you can do
+- Generate rectangular mazes
+- Generate mazes within mask images (masks limit where mazes are generated)
+- Generate text as a mask
+
+### General options
 
 These options can be specified for normal and masked maze generation. To select 
 between the two, specify `generate` or `mask` after the general options. Both commands
@@ -34,19 +46,16 @@ and [Mask image options](#mask-image-options).
 
 ```
 $ python maze.py 
-usage: maze.py [-h] [-f FILENAME] [-s SEED] [-o ORIGIN ORIGIN] [-c CELLSIZE]
-               [-l LINEWIDTH]
-               {generate,mask} ...
+usage: maze.py [-h] [-f FILENAME] [-s SEED] [-o ORIGIN ORIGIN] [-c CELLSIZE] [-l LINEWIDTH] [-d FONTSIZE] [-b BORDERSIZE] {generate,mask} ...
 
 Generate mazes.
 
 positional arguments:
-  {generate,mask}       Select between just maze generation with width/height
-                        or generating a maze with a mask.
+  {generate,mask}       Select between just maze generation with width/height or generating a maze with a mask.
     generate            Generate a maze within a rectangle.
     mask                Apply mask to limit maze.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -f FILENAME, --filename FILENAME
                         Filename that is used to save the maze.
@@ -57,11 +66,17 @@ optional arguments:
                         Cell size in pixels for plotting.
   -l LINEWIDTH, --linewidth LINEWIDTH
                         Line width of cell walls for plotting in pixels.
+  -d FONTSIZE, --fontsize FONTSIZE
+                        Font size for text mask. Only used if text is specified.
+  -b BORDERSIZE, --bordersize BORDERSIZE
+                        Border size for text mask. Only used if text is specified.
+
 ```
 
-## Maze generation options
+### Maze generation options
 
-Specify dimensions of maze
+The `generate` sub command generates rectangular mazes. You can specify the dimensions of maze and use all the basic 
+arguments such as seed as well.
 
 ```
 python maze.py generate -h
@@ -87,24 +102,26 @@ and save it in a file named example.png.
 
 ![Generated maze](images/example.png)
 
-## Mask image options
+### Mask image options
 
-Specify which mask image to use. One pixel of the mask image will be one cell 
+Specify either a mask image or text for which a mask will be automatically created.
+
+For mask images (`-m`): which mask image to use. One pixel of the mask image will be one cell 
 in the final maze. Mask images are expected to be saved with 8-bit pixels, 
 black and white. A black pixel blocks traversal of the algorithm, allowing to 
 build walls.
 
+For mask text (`-t`): Text used for mask generation. 
+
 ```
 python maze.py mask -h
-usage: maze.py mask [-h] [-m MASKIMG]
+usage: maze.py mask [-h] [-m MASKIMG | -t TEXT]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -m MASKIMG, --maskimg MASKIMG
-                        Image to use as mask, where only white pixels can be
-                        visited by the algorithm, while black pixels are
-                        forbidden. If this is specified, the maze will be of
-                        the same dimensions as the mask image.
+                        Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.
+  -t TEXT, --text TEXT  Text to use as a mask where the maze is generate inside the text. If this is specified, the size of the maze is derived from the text and the fontsize and bordersize parameters.
 ```
 
 Example:
@@ -119,7 +136,7 @@ Generate a maze from a mask image (dog_outline.png). Starting cell is pixel x:26
  ![Generated maze](images/dogmaze.png)
  
  
- ## Generating mask images from text
+### Generating mask images from text
  
 If you want to generate the maze inside the letters the font has to connect 
 letters together. I found the Unicorn font from Nick Curtis which is free and can 
