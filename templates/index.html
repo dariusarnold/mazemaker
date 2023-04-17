@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        #maze-container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #mask-container {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+
+
+</head>
+<body>
+<h1>Maze Generator</h1>
+<form id="maze-form">
+    <label for="width">Width:</label>
+    <input type="number" id="width" name="width" value="32" min="1">
+    <label for="height">Height:</label>
+    <input type="number" id="height" name="height" value="32" min="1">
+    <button type="submit">Generate Maze</button>
+</form>
+<div id="maze-container">
+    <img id="maze-image" src="" alt="Generated maze" style="display:none">
+    <a id="download-link" href="" download="maze.png" style="display:none">Download Maze</a>
+</div>
+
+<form id="mask-form">
+    <h2>Mask Generator</h2>
+    <label for="text">Text:</label>
+    <input type="text" id="text" name="text" value="example">
+    <label for="fontsize">Font Size:</label>
+    <input type="number" id="fontsize" name="fontsize" value="32" min="1">
+    <label for="bordersize">Border Size:</label>
+    <input type="number" id="bordersize" name="bordersize" value="16" min="1">
+    <label for="cell_size">Cell Size:</label>
+    <input type="number" id="cell_size" name="cell_size" value="5" min="1">
+    <label for="wall_width">Wall Width:</label>
+    <input type="number" id="wall_width" name="wall_width" value="1" min="1">
+    <button type="submit">Generate Mask</button>
+</form>
+<div id="mask-container">
+    <img id="mask-image" src="" alt="Generated mask" style="display:none">
+    <a id="download-mask-link" href="" download="mask.png" style="display:none">Download Mask</a>
+</div>
+
+<script>
+    document.getElementById('maze-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const width = document.getElementById('width').value;
+        const height = document.getElementById('height').value;
+        const timestamp = new Date().getTime(); // Get current timestamp
+
+        const imageUrl = `/maze?width=${width}&height=${height}&timestamp=${timestamp}`;
+
+        document.getElementById('maze-image').src = imageUrl;
+        document.getElementById('maze-image').style.display = 'block';
+
+        document.getElementById('download-link').href = imageUrl;
+        document.getElementById('download-link').style.display = 'block';
+    });
+    document.getElementById('mask-form').addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        const text = document.getElementById('text').value;
+        const fontsize = document.getElementById('fontsize').value;
+        const bordersize = document.getElementById('bordersize').value;
+        const cell_size = document.getElementById('cell_size').value;
+        const wall_width = document.getElementById('wall_width').value;
+        const timestamp = new Date().getTime(); // Get current timestamp
+
+        const imageUrl = `/masked_maze?text=${text}&fontsize=${fontsize}&bordersize=${bordersize}&cell_size=${cell_size}&wall_width=${wall_width}&timestamp=${timestamp}`;
+
+        document.getElementById('mask-image').src = imageUrl;
+        document.getElementById('mask-image').style.display = 'block';
+
+        document.getElementById('download-mask-link').href = imageUrl;
+        document.getElementById('download-mask-link').style.display = 'block';
+    });
+
+</script>
+</body>
+</html>
