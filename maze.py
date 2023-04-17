@@ -9,6 +9,8 @@ from typing import List
 import numpy as np
 from PIL import Image, ImageDraw, ImageColor
 
+from create_mask_image import text_mask, text_mask_to_boolarray, find_start
+
 
 class Stack:
     def __init__(self):
@@ -73,6 +75,8 @@ class Maze:
         self.width = int(width)
         self.height = int(height)
         self.cell_grid = np.array([Cell() for _ in range(height * width)]).reshape((height, width))
+        if (mask is not None) and (mask.shape != (height, width)):
+            raise ValueError(f"Mask shape does not match maze dimensions. mask: {mask.shape}, maze: {(height, width)}")
         self.mask = mask
         self.start_cell = None
 
@@ -280,6 +284,14 @@ def plot_maze(maze: Maze, output_filename: str, cell_size_pixels: int = 5, line_
     visualizer.save_plot(output_filename)
 
 
+def masked_maze(text: str, fontsize: int, bordersize: int):
+    mask_img = text_mask(text, fontsize, bordersize, invert=False)
+    start = find_start(mask_img)
+    mask = text_mask_to_boolarray(mask_img)
+    maze = generate_maze(mask.shape[1], mask.shape[0], CellIndex(*start), mask=mask)
+    return maze
+
+
 if __name__ == '__main__':
     # top level parser
     parser = argparse.ArgumentParser(description="Generate mazes.")
@@ -296,7 +308,11 @@ if __name__ == '__main__':
     parser_generate.add_argument("height", type=int, help="Height of the maze in cells.")
 
     parser_mask = subparsers.add_parser("mask", help="Apply mask to limit maze.")
-    parser_mask.add_argument("-m", "--maskimg", default=None, help="Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.")
+    parser.add_argument("-d", "--fontsize", type=int, default=32, help="Font size for text mask. Only used if text is specified.")
+    parser.add_argument("-b", "--bordersize", type=int, default=32, help="Border size for text mask. Only used if text is specified.")
+    group = parser_mask.add_mutually_exclusive_group()
+    group.add_argument("-m", "--maskimg", default=None, help="Image to use as mask, where only white pixels can be visited by the algorithm, while black pixels are forbidden. If this is specified, the maze will be of the same dimensions as the mask image.")
+    group.add_argument("-t", "--text", default=None, help="Text to use as a mask where the maze is generate inside the text. If this is specified, the size of the maze is derived from the text and the fontsize and bordersize parameters.")
     args = parser.parse_args()
 
     if seed is not None:
@@ -317,8 +333,12 @@ if __name__ == '__main__':
             mask = np.asarray(img, dtype=bool)
             args.width = img.size[0]
             args.height = img.size[1]
+        elif args.text is not None:
+            maze = masked_maze(args.text, args.fontsize, args.bordersize)
+            plot_maze(maze, args.filename, cell_size_pixels=args.cellsize, line_width_pixels=args.linewidth)
+            sys.exit()
         else:
-            sys.exit("No mask image specified.")
+            sys.exit("No mask image or text specified.")
 
     maze = generate_maze(args.width, args.height, CellIndex(x=args.origin[0], y=args.origin[1]), mask)
     plot_maze(maze, args.filename, cell_size_pixels=args.cellsize, line_width_pixels=args.linewidth)

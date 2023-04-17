@@ -1,6 +1,7 @@
 import argparse
 import sys
 import enum
+import numpy as np
 from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
@@ -85,6 +86,24 @@ def text_mask(text: str, fontsize: int, bordersize: int = 32, invert: bool = Fal
     img = _create_fitting_image(text, font, bordersize)
     _draw_text_outline(img, font, text, fill_color, line_color, origin=(bordersize, bordersize))
     return img
+
+
+def text_mask_to_boolarray(img: Image, invert: bool = False):
+    arr = np.array(img)
+    # Compare with threshold to get bool array
+    bool_mask = arr >= 128
+    return bool_mask
+
+
+def find_start(img: Image):
+    x, y = 0, int(img.height / 2)
+    # Go right until the outline is hit
+    while img.getpixel((x, y)) == Color.white:
+        x += 1
+    # Go over the outline into the text
+    while img.getpixel((x, y)) == Color.black:
+        x += 1
+    return x, y
 
 
 def save_image_to_disk(image: Image.Image, filename: str) -> None:
