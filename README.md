@@ -2,7 +2,7 @@
 
 Generate perfect (only a single solution without retracing steps) mazes
 using recursive backtracing. All cells of the maze will be connected with each
-other, meaning there are no unreachable places. 
+other, meaning every point is reachable from every other point. 
 
 Allows creating masked mazes by specifying an image.
 A mask image limits the possible space for maze generation and allows to create 
@@ -15,6 +15,15 @@ Also contains a script that creates mask images from text.
  - Python >= 3.6
  - numpy
  - PIL
+ - flask for the web interface
+
+## Setup
+
+1. Ensure you have `pip` and `venv` installed in your python distribution
+2. Create a virtual environment called venv: `python -m venv venv`
+3. Activate the virtual environment by `source venv/bin/activate
+` (for Linux and MacOs) or `venv\Scripts\activate` (for Windows)
+4. Install the requirements: `pip install -r requirements.txt`
 
 ## General options
 
