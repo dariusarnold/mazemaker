@@ -114,57 +114,114 @@
             visibility: visible;
             opacity: 1;
         }
+
+        .tab {
+            overflow: hidden;
+            background-color: #f1f1f1;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .tab button {
+            background-color: inherit;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-family: Poppins, sans-serif;
+            font-size: 17px;
+            color: #000;
+        }
+
+        .tab button:hover {
+            background-color: #ddd;
+        }
+
+        .tab button.active {
+            background-color: #ccc;
+        }
+
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
     </style>
 </head>
 <body>
-<h1>Rectangular Maze Generator</h1>
-<form id="maze-form">
-    <label for="width">Width:</label>
-    <input type="number" id="width" name="width" value="32" min="1">
-    <label for="height">Height:</label>
-    <input type="number" id="height" name="height" value="32" min="1">
-    <button type="submit">Generate Maze</button>
-</form>
-<div id="maze-container">
-    <img id="maze-image" src="" alt="Generated maze" style="display:none; max-width: 100%;">
-    <a id="download-link" href="" download="maze.png" style="display:none">Download Maze</a>
-</div>
+    <h1>Maze Generator</h1>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'TextMaze')">Text Maze</button>
+        <button class="tablinks" onclick="openTab(event, 'RectangularMaze')">Rectangular Maze</button>
+    </div>
 
-<form id="mask-form">
-    <h1>Text Maze Generator</h1>
-    <label for="text" class="tooltip">Text:
-        <span class="tooltiptext">Enter the text you want to create a mask for.</span>
-    </label>
-    <input type="text" id="text" name="text" value="example" placeholder="Enter text here">
+    <div id="RectangularMaze" class="tabcontent">
+        <form id="maze-form">
+            <label for="width">Width:</label>
+            <input type="number" id="width" name="width" value="32" min="1">
+            <label for="height">Height:</label>
+            <input type="number" id="height" name="height" value="32" min="1">
+            <button type="submit">Generate Maze</button>
+        </form>
+        <div id="maze-container">
+            <img id="maze-image" src="" alt="Generated maze" style="display:none; max-width: 100%;">
+            <a id="download-link" href="" download="maze.png" style="display:none">Download Maze</a>
+        </div>
+    </div>
 
-    <label for="fontsize" class="tooltip">Font Size:
-        <span class="tooltiptext">Specify the font size in pixels.</span>
-    </label>
-    <input type="number" id="fontsize" name="fontsize" value="32" min="1">
+    <div id="TextMaze" class="tabcontent">
+        <form id="mask-form">
+            <h1>Text Maze Generator</h1>
+            <label for="text" class="tooltip">Text:
+                <span class="tooltiptext">Enter the text you want to create a mask for.</span>
+            </label>
+            <input type="text" id="text" name="text" value="example" placeholder="Enter text here">
 
-    <label for="bordersize" class="tooltip">Border Size:
-        <span class="tooltiptext">Set the border size in pixels. The border is the white area around the text.</span>
-    </label>
-    <input type="number" id="bordersize" name="bordersize" value="16" min="1">
+            <label for="fontsize" class="tooltip">Font Size:
+                <span class="tooltiptext">Specify the font size in pixels.</span>
+            </label>
+            <input type="number" id="fontsize" name="fontsize" value="32" min="1">
 
-    <label for="cell_size" class="tooltip">Cell Size:
-        <span class="tooltiptext">Set the cell size in pixels.</span>
-    </label>
-    <input type="number" id="cell_size" name="cell_size" value="5" min="1">
+            <label for="bordersize" class="tooltip">Border Size:
+                <span class="tooltiptext">Set the border size in pixels. The border is the white area around the text.</span>
+            </label>
+            <input type="number" id="bordersize" name="bordersize" value="16" min="1">
 
-    <label for="wall_width" class="tooltip">Wall Width:
-        <span class="tooltiptext">The width of the walls between cells in pixels.</span>
-    </label>
-    <input type="number" id="wall_width" name="wall_width" value="1" min="1">
+            <label for="cell_size" class="tooltip">Cell Size:
+                <span class="tooltiptext">Set the cell size in pixels.</span>
+            </label>
+            <input type="number" id="cell_size" name="cell_size" value="5" min="1">
 
-    <button type="submit">Generate Mask</button>
-</form>
-<div id="mask-container">
-    <img id="mask-image" src="" alt="Generated mask" style="display:none; max-width: 100%;">
-    <a id="download-mask-link" href="" download="mask.png" style="display:none">Download Mask</a>
-</div>
+            <label for="wall_width" class="tooltip">Wall Width:
+                <span class="tooltiptext">The width of the walls between cells in pixels.</span>
+            </label>
+            <input type="number" id="wall_width" name="wall_width" value="1" min="1">
+
+            <button type="submit">Generate Mask</button>
+        </form>
+        <div id="mask-container">
+            <img id="mask-image" src="" alt="Generated mask" style="display:none; max-width: 100%;">
+            <a id="download-mask-link" href="" download="mask.png" style="display:none">Download Mask</a>
+        </div>
+    </div>
 
 <script>
+    function openTab(evt, tabName) {
+        let i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+    document.getElementsByClassName("tablinks")[0].click();
+
     document.getElementById('maze-form').addEventListener('submit', function (event) {
         event.preventDefault();
 
