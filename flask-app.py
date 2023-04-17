@@ -4,7 +4,7 @@ from maze import generate_maze, MazeVisualizerPIL, CellIndex, masked_maze
 from create_mask_image import text_mask
 from PIL import Image, ImageColor
 
-app = Flask(__name__)
+app = Flask("mazemaker")
 
 @app.route('/')
 def index():
@@ -57,4 +57,4 @@ def masked_maze_route():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0")
