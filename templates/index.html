@@ -34,10 +34,38 @@
                 margin-bottom: 5px;
             }
         }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position the tooltip above the text */
+            left: 50%;
+            margin-left: -100px; /* Use half of the tooltip width to center it */
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-<h1>Maze Generator</h1>
+<h1>Rectangular Maze Generator</h1>
 <form id="maze-form">
     <label for="width">Width:</label>
     <input type="number" id="width" name="width" value="32" min="1">
@@ -51,17 +79,32 @@
 </div>
 
 <form id="mask-form">
-    <h2>Mask Generator</h2>
-    <label for="text">Text:</label>
-    <input type="text" id="text" name="text" value="example">
-    <label for="fontsize">Font Size:</label>
+    <h1>Text Maze Generator</h1>
+    <label for="text" class="tooltip">Text:
+        <span class="tooltiptext">Enter the text you want to create a mask for.</span>
+    </label>
+    <input type="text" id="text" name="text" value="example" placeholder="Enter text here">
+
+    <label for="fontsize" class="tooltip">Font Size:
+        <span class="tooltiptext">Specify the font size in pixels.</span>
+    </label>
     <input type="number" id="fontsize" name="fontsize" value="32" min="1">
-    <label for="bordersize">Border Size:</label>
+
+    <label for="bordersize" class="tooltip">Border Size:
+        <span class="tooltiptext">Set the border size in pixels. The border is the white area around the text.</span>
+    </label>
     <input type="number" id="bordersize" name="bordersize" value="16" min="1">
-    <label for="cell_size">Cell Size:</label>
+
+    <label for="cell_size" class="tooltip">Cell Size:
+        <span class="tooltiptext">Set the cell size in pixels.</span>
+    </label>
     <input type="number" id="cell_size" name="cell_size" value="5" min="1">
-    <label for="wall_width">Wall Width:</label>
+
+    <label for="wall_width" class="tooltip">Wall Width:
+        <span class="tooltiptext">The width of the walls between cells in pixels.</span>
+    </label>
     <input type="number" id="wall_width" name="wall_width" value="1" min="1">
+
     <button type="submit">Generate Mask</button>
 </form>
 <div id="mask-container">
