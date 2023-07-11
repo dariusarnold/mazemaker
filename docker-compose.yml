@@ -17,6 +17,7 @@ services:
       - ./certs:/etc/letsencrypt
       - ./certs-data:/data/letsencrypt
       - ./www:/var/www/certbot
+      - ./99-autoreload.sh:/docker-entrypoint.d/99-autoreload.sh
     depends_on:
       - app
     restart: always
